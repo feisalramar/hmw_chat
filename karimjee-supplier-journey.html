@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Karimjee Supplier Portal — Messenger Journey Demo</title>
+<style>
+  :root{
+    --bg:#0b1220;
+    --panel:#111a2e;
+    --bubble-in:#1f2937;
+    --bubble-out:#2563eb;
+    --bubble-system:#0f766e;
+    --text:#e5e7eb;
+    --muted:#9ca3af;
+    --accent:#f59e0b;
+    --green:#10b981;
+    --border:#1e293b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(135deg,#0b1220 0%,#1a2238 100%);
+    color:var(--text);
+    min-height:100vh;
+    padding:24px 12px;
+  }
+  .wrap{max-width:480px;margin:0 auto}
+  .intro{
+    text-align:center;margin-bottom:18px;
+  }
+  .intro h1{margin:0 0 6px;font-size:20px;letter-spacing:.3px}
+  .intro p{margin:0;color:var(--muted);font-size:13px}
+  .phone{
+    background:var(--panel);
+    border-radius:28px;
+    border:1px solid var(--border);
+    box-shadow:0 30px 60px rgba(0,0,0,.5);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    height:80vh;min-height:640px;
+  }
+  .header{
+    display:flex;align-items:center;gap:12px;
+    padding:14px 16px;
+    background:#0d1426;
+    border-bottom:1px solid var(--border);
+  }
+  .avatar{
+    width:40px;height:40px;border-radius:50%;
+    background:linear-gradient(135deg,#f59e0b,#dc2626);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:14px;color:#fff;
+  }
+  .header .meta{flex:1}
+  .header .name{font-weight:600;font-size:15px}
+  .header .status{font-size:11px;color:var(--green)}
+  .header .icons{display:flex;gap:14px;color:var(--muted);font-size:18px}
+  .chat{
+    flex:1;overflow-y:auto;
+    padding:16px;
+    display:flex;flex-direction:column;gap:10px;
+    background:
+      radial-gradient(circle at 20% 10%,rgba(37,99,235,.08),transparent 40%),
+      radial-gradient(circle at 80% 80%,rgba(245,158,11,.06),transparent 40%),
+      var(--bg);
+    scroll-behavior:smooth;
+  }
+  .stage{
+    align-self:center;
+    background:rgba(15,118,110,.15);
+    color:#5eead4;
+    font-size:11px;
+    padding:5px 12px;border-radius:999px;
+    border:1px solid rgba(15,118,110,.4);
+    margin:6px 0 2px;
+    text-transform:uppercase;letter-spacing:.6px;font-weight:600;
+  }
+  .msg{
+    max-width:78%;
+    padding:9px 13px;
+    border-radius:18px;
+    font-size:14px;line-height:1.4;
+    position:relative;
+    word-wrap:break-word;
+    animation:pop .25s ease-out;
+  }
+  .msg.in{
+    align-self:flex-start;
+    background:var(--bubble-in);
+    border-bottom-left-radius:4px;
+  }
+  .msg.out{
+    align-self:flex-end;
+    background:var(--bubble-out);
+    color:#fff;
+    border-bottom-right-radius:4px;
+  }
+  .msg .time{
+    display:block;font-size:10px;opacity:.65;margin-top:4px;text-align:right;
+  }
+  .msg.in .who{
+    font-size:10px;color:var(--accent);font-weight:600;margin-bottom:2px;
+  }
+  .attachment{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.08);
+    padding:8px 10px;border-radius:10px;
+    margin-top:6px;font-size:12px;
+  }
+  .attachment .ic{font-size:18px}
+  .typing{
+    align-self:flex-start;
+    background:var(--bubble-in);
+    padding:10px 14px;border-radius:18px;border-bottom-left-radius:4px;
+    display:none;
+  }
+  .typing.show{display:flex;gap:4px}
+  .typing span{
+    width:7px;height:7px;border-radius:50%;background:#9ca3af;
+    animation:blink 1.2s infinite;
+  }
+  .typing span:nth-child(2){animation-delay:.2s}
+  .typing span:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+  @keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .composer{
+    display:flex;gap:8px;padding:12px;
+    background:#0d1426;border-top:1px solid var(--border);
+  }
+  .composer input{
+    flex:1;background:#1f2937;border:none;border-radius:20px;
+    padding:10px 14px;color:var(--text);font-size:14px;outline:none;
+  }
+  .composer button{
+    background:var(--bubble-out);border:none;color:#fff;
+    width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:16px;
+  }
+  .controls{
+    margin-top:14px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;
+  }
+  .controls button{
+    background:var(--panel);color:var(--text);
+    border:1px solid var(--border);padding:8px 14px;border-radius:8px;
+    cursor:pointer;font-size:12px;
+  }
+  .controls button:hover{background:#1e293b}
+  .progress{
+    height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:10px;
+  }
+  .progress .bar{
+    height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#10b981);
+    transition:width .4s ease;
+  }
+  .legend{
+    text-align:center;font-size:11px;color:var(--muted);margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1>Karimjee Supplier Portal</h1>
+    <p>Interactive prototype — full supplier journey as a messenger thread</p>
+  </div>
+
+  <div class="phone">
+    <div class="header">
+      <div class="avatar">KP</div>
+      <div class="meta">
+        <div class="name">Karimjee Portal</div>
+        <div class="status">● Online · Supplier Success Team</div>
+      </div>
+      <div class="icons">📞 ⋮</div>
+    </div>
+
+    <div class="chat" id="chat">
+      <div class="typing" id="typing"><span></span><span></span><span></span></div>
+    </div>
+
+    <div class="composer">
+      <input id="reply" placeholder="Type a message…" />
+      <button onclick="next()">▶</button>
+    </div>
+  </div>
+
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="controls">
+    <button onclick="next()">Next message ▶</button>
+    <button onclick="autoplay()">▶ Autoplay</button>
+    <button onclick="reset()">↻ Restart</button>
+  </div>
+  <div class="legend">Demo flow: 11 stages of the supplier lifecycle</div>
+</div>
+
+<script>
+const script = [
+  // 1. Awareness
+  {stage:"1 · Awareness & Discovery"},
+  {in:true, who:"Karimjee Procurement", text:"Hello Mr. Rajan 👋 We're inviting Acme Industries to join the new Karimjee Supplier Portal — a single place to manage RFQs, orders, invoices and compliance with us."},
+  {in:true, who:"Karimjee Procurement", text:"You'll receive your secure login shortly. Looking forward to a smoother partnership!"},
+  {out:true, text:"Thanks! That sounds great. Looking forward to the credentials."},
+
+  // 2. Authentication
+  {stage:"2 · Access & Authentication"},
+  {in:true, who:"Portal Bot", text:"🔐 Your account is ready.\nUsername: rajan@acme.co\nA temporary password and MFA setup link have been sent to your registered email."},
+  {out:true, text:"Logged in and MFA enabled ✅"},
+  {in:true, who:"Portal Bot", text:"Welcome to your dashboard, Rajan. Let's set up your supplier profile."},
+
+  // 3. Onboarding
+  {stage:"3 · Onboarding & Profile Setup"},
+  {in:true, who:"Onboarding Wizard", text:"Please complete:\n• Company info & Tax ID\n• Primary contacts\n• Product/service categories\n• Banking details\n• Certifications (ISO, insurance)"},
+  {out:true, text:"Uploading documents now."},
+  {out:true, text:"", attach:{icon:"📎", name:"ISO-9001-Certificate.pdf · 1.2 MB"}},
+  {out:true, text:"", attach:{icon:"📎", name:"Bank-Details-Acme.pdf · 240 KB"}},
+  {in:true, who:"Onboarding Wizard", text:"Profile 100% complete ✅ You're now an approved active supplier."},
+
+  // 4. Exploration
+  {stage:"4 · Exploration & Navigation"},
+  {in:true, who:"Portal Bot", text:"Quick tour:\n📦 Orders  📨 RFQs  💬 Messages  💰 Invoices  📊 Performance  📚 Help Center"},
+  {out:true, text:"Got it. Where do I see open RFQs?"},
+  {in:true, who:"Portal Bot", text:"Tap “RFQs → Open”. You currently have 1 awaiting response."},
+
+  // 5a. RFQ
+  {stage:"5A · RFQ Response"},
+  {in:true, who:"Karimjee Procurement", text:"📨 New RFQ-2048: 500 units of industrial bearings, delivery within 21 days. Quotes due Friday 5 PM."},
+  {out:true, text:"Reviewing specs now…"},
+  {out:true, text:"Submitting our quote: USD 14.20/unit, FOB Mombasa, 18-day delivery."},
+  {in:true, who:"Portal Bot", text:"Quote submitted ✅ Status: Under Review"},
+  {in:true, who:"Karimjee Procurement", text:"🎉 Congratulations — your quote on RFQ-2048 has been awarded. PO will follow shortly."},
+
+  // 5b. Order Fulfillment
+  {stage:"5B · Order Fulfillment"},
+  {in:true, who:"Portal Bot", text:"📄 PO-7781 issued. Please confirm receipt and delivery date."},
+  {out:true, text:"Confirmed. Dispatch on the 12th, ETA the 18th."},
+  {out:true, text:"", attach:{icon:"📦", name:"BOL-7781.pdf + Packing-List.pdf"}},
+  {out:true, text:"Tracking #: MSC-7781-KE 🚚"},
+  {in:true, who:"Karimjee Logistics", text:"Delivery received in full. Thank you!"},
+
+  // 6. Communication
+  {stage:"6 · Communication & Collaboration"},
+  {in:true, who:"Procurement Manager", text:"Quick note — we may revise spec on next batch. Sharing draft."},
+  {in:true, who:"Procurement Manager", text:"", attach:{icon:"📑", name:"Spec-Revision-v2.docx"}},
+  {out:true, text:"Reviewed. We can meet the new tolerance. Sending revised proposal."},
+
+  // 7. Performance
+  {stage:"7 · Performance Monitoring"},
+  {in:true, who:"Portal Bot", text:"📊 Q2 Scorecard:\nOn-time: 98%\nQuality: 4.8/5\nResponsiveness: 96%\nStatus: ⭐ Preferred Supplier"},
+  {out:true, text:"Excellent — thank you for the visibility!"},
+
+  // 8. Payments
+  {stage:"8 · Transaction & Payment"},
+  {out:true, text:"Submitting invoice INV-552 against PO-7781."},
+  {in:true, who:"Karimjee Finance", text:"Invoice received. Status: Approved → Scheduled for payment in 14 days."},
+  {in:true, who:"Portal Bot", text:"💰 Payment of USD 7,100 remitted. Reference: TXN-99812"},
+  {out:true, text:"Received and reconciled ✅"},
+
+  // 9. Compliance
+  {stage:"9 · Compliance & Renewal"},
+  {in:true, who:"Compliance Bot", text:"⚠️ Reminder: ISO-9001 certificate expires in 30 days. Please re-upload."},
+  {out:true, text:"", attach:{icon:"📎", name:"ISO-9001-Renewed-2026.pdf"}},
+  {in:true, who:"Compliance Bot", text:"Certificate updated. Compliance status: Green ✅"},
+
+  // 10. Relationship
+  {stage:"10 · Ongoing Relationship"},
+  {in:true, who:"Account Manager", text:"Hi Rajan — strong half-year! Can we discuss expanding into hydraulic seals next quarter?"},
+  {out:true, text:"Absolutely. Let's set a call next week."},
+  {in:true, who:"Account Manager", text:"Calendar invite sent. Looking forward!"},
+
+  // 11. Support
+  {stage:"11 · Support & Problem Resolution"},
+  {out:true, text:"One issue: payment TXN-99902 not yet visible on my statement."},
+  {in:true, who:"Help Desk", text:"Ticket #4421 opened. Finance is on it — ETA 24h."},
+  {in:true, who:"Help Desk", text:"Resolved ✅ Bank reference posted. Apologies for the delay!"},
+  {out:true, text:"Thanks team — portal makes this all so much easier 🙌"},
+  {in:true, who:"Karimjee Portal", text:"That's the goal. Here's to a long, growing partnership 🤝"}
+];
+
+let i = 0, timer = null;
+const chat = document.getElementById('chat');
+const typing = document.getElementById('typing');
+const bar = document.getElementById('bar');
+
+function addMsg(item){
+  if(item.stage){
+    const s = document.createElement('div');
+    s.className = 'stage';
+    s.textContent = item.stage;
+    chat.insertBefore(s, typing);
+    return;
+  }
+  const m = document.createElement('div');
+  m.className = 'msg ' + (item.in ? 'in' : 'out');
+  let html = '';
+  if(item.who) html += `<div class="who">${item.who}</div>`;
+  if(item.text) html += item.text.replace(/\n/g,'<br>');
+  if(item.attach) html += `<div class="attachment"><span class="ic">${item.attach.icon}</span>${item.attach.name}</div>`;
+  const t = new Date();
+  const time = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  html += `<span class="time">${time}</span>`;
+  m.innerHTML = html;
+  chat.insertBefore(m, typing);
+}
+
+function showTyping(cb){
+  typing.classList.add('show');
+  chat.scrollTop = chat.scrollHeight;
+  setTimeout(()=>{ typing.classList.remove('show'); cb(); }, 600);
+}
+
+function next(){
+  if(i >= script.length) return;
+  const item = script[i++];
+  if(item.stage || item.out){
+    addMsg(item);
+    chat.scrollTop = chat.scrollHeight;
+    updateBar();
+  } else {
+    showTyping(()=>{ addMsg(item); chat.scrollTop = chat.scrollHeight; updateBar(); });
+  }
+}
+
+function updateBar(){
+  bar.style.width = ((i/script.length)*100)+'%';
+}
+
+function autoplay(){
+  if(timer){ clearInterval(timer); timer=null; return; }
+  timer = setInterval(()=>{
+    if(i >= script.length){ clearInterval(timer); timer=null; return; }
+    next();
+  }, 1400);
+}
+
+function reset(){
+  if(timer){clearInterval(timer);timer=null;}
+  i = 0;
+  chat.innerHTML = '';
+  chat.appendChild(typing);
+  bar.style.width = '0%';
+}
+
+// Kick off with first few messages
+next();
+</script>
+</body>
+</html>
